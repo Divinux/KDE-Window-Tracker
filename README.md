@@ -1,5 +1,4 @@
 # KDE-Window-Tracker
-Logs active window changes for productivity tracking
 
 CLI tool to log active window changes for productivity tracking similar to [ProcrastiTracker](https://strlen.com/procrastitracker/) and [ActivityWatch](https://activitywatch.net/). Works on KDE Plasma Wayland.
 
