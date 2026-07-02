@@ -30,6 +30,11 @@ To display stats
 window-analyzer
 ```
 
+To display condensed stats
+```bash
+window-analyzer -c
+```
+
 
 
 
