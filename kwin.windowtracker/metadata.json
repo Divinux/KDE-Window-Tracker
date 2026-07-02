@@ -1,0 +1,24 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Divinux"
+            }
+        ],
+        "Name": "Window Tracker",
+        "Description": "Logs active window changes for productivity tracking",
+        "Id": "kwin.windowtracker",
+        "Icon": "view-statistics",
+        "Category": "Utilities",
+        "EnabledByDefault": false,
+        "Version": "1.0",
+        "License": "MIT",
+        "Website": "https://github.com/Divinux/KDE-Window-Tracker",
+        "ServiceTypes": [
+            "KWin/Script"
+        ]
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}

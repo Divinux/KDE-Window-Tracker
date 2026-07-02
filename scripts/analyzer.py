@@ -1,0 +1,88 @@
+import json
+import datetime
+import os
+from collections import defaultdict
+
+LOG_FILE = os.path.expanduser("~/.window_activity.jsonl")
+
+def get_idle_timeout(app_class, title):
+    """Dynamically determine idle timeout based on context."""
+    app_class = app_class.lower()
+    title = title.lower()
+
+    # 3-Hour Timeout: Media players and streaming sites
+    if app_class in ["vlc", "mpv", "smplayer"] or "netflix" in title or "youtube" in title:
+        return datetime.timedelta(hours=3)
+
+    # 30-Minute Timeout: Reading documentation or long articles
+    if app_class in ["okular", "evince"] or "pdf" in title:
+        return datetime.timedelta(minutes=30)
+
+    # 10-Minute Timeout: Default for high-interaction apps (terminals, editors)
+    return datetime.timedelta(minutes=10)
+
+def parse_logs():
+    stats = defaultdict(lambda: defaultdict(float))
+    prev_time, prev_class, prev_title = None, None, None
+
+    if not os.path.exists(LOG_FILE):
+        return stats
+
+    with open(LOG_FILE, "r") as f:
+        for line in f:
+            try:
+                event = json.loads(line.strip())
+                current_time = datetime.datetime.fromisoformat(event["timestamp"])
+
+                if prev_time is not None:
+                    delta = current_time - prev_time
+                    # Use the dynamic timeout based on the PREVIOUS window
+                    dynamic_timeout = get_idle_timeout(prev_class, prev_title)
+
+                    if delta < dynamic_timeout:
+                        stats[prev_class][prev_title] += delta.total_seconds()
+
+                prev_time = current_time
+                prev_class = event["class"]
+                prev_title = event["title"]
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+    return stats
+
+def format_time(seconds):
+    m, s = divmod(int(seconds), 60)
+    h, m = divmod(m, 60)
+    if h > 0: return f"{h}h {m:02}m {s:02}s"
+    elif m > 0: return f"{m}m {s:02}s"
+    else: return f"{s}s"
+
+def print_tree(stats):
+    if not stats:
+        return
+
+    # 1. Sum up total time per app to sort the main branches
+    app_totals = {app: sum(titles.values()) for app, titles in stats.items()}
+    sorted_apps = sorted(app_totals.items(), key=lambda x: x[1], reverse=True)
+
+    print("\n📊 Window Usage Tree\n" + "="*30)
+
+    for app, total_app_time in sorted_apps:
+        if total_app_time < 5: continue # Skip apps open for less than 5 seconds globally
+
+        print(f"📁 {app} [{format_time(total_app_time)}]")
+
+        # 2. Sort the individual windows/tabs within that app
+        sorted_titles = sorted(stats[app].items(), key=lambda x: x[1], reverse=True)
+
+        for i, (title, duration) in enumerate(sorted_titles):
+            if duration < 2: continue # Filter out accidental micro-switches
+
+            # Formatting to make it look like a nice terminal tree
+            prefix = "   └─" if i == len(sorted_titles) - 1 else "   ├─"
+            print(f"{prefix} 📄 {title} [{format_time(duration)}]")
+    print("="*30 + "\n")
+
+if __name__ == "__main__":
+    activity_stats = parse_logs()
+    print_tree(activity_stats)
