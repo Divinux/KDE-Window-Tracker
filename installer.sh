@@ -60,14 +60,14 @@ systemctl --user status windowtracker.service
 mkdir -p "$HOME/.local/bin"
 
 # 2. Write the wrapper script
-cat <<EOF > "$HOME/.local/bin/window-analyzer"
+cat <<EOF > "$HOME/.local/bin/windowtracker"
 #!/usr/bin/env bash
 exec /usr/bin/env python3 "$INSTALL_DIR/scripts/analyzer.py" "\$@"
 EOF
 
 # 3. Make it executable
-chmod +x "$HOME/.local/bin/window-analyzer"
+chmod +x "$HOME/.local/bin/windowtracker"
 
 # 4. Inform the user
-echo "Helper script installed to ~/.local/bin/window-analyzer"
+echo "Helper script installed to ~/.local/bin/windowtracker"
 echo "Note: Ensure '~/.local/bin' is in your \$PATH."

@@ -34,9 +34,9 @@ if [ -d "$INSTALL_DIR" ]; then
 fi
 
 # 5. Remove the helper script
-if [ -f "$HOME/.local/bin/window-analyzer" ]; then
+if [ -f "$HOME/.local/bin/windowtracker" ]; then
     echo "Removing helper script..."
-    rm "$HOME/.local/bin/window-analyzer"
+    rm "$HOME/.local/bin/windowtracker"
 fi
 
 echo "Uninstallation complete. Your system has been cleaned up."

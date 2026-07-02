@@ -2,6 +2,8 @@
 
 CLI tool to log active window changes for productivity tracking similar to [ProcrastiTracker](https://strlen.com/procrastitracker/) and [ActivityWatch](https://activitywatch.net/). Works on KDE Plasma Wayland.
 
+<img src="images/screen1.png" width="800">
+
 # Requirements
 python 3+
 
@@ -27,12 +29,12 @@ chmod +x uninstaller.sh
 # Usage
 To display stats
 ```bash
-window-analyzer
+windowtracker
 ```
 
 To display condensed stats
 ```bash
-window-analyzer -c
+windowtracker -c
 ```
 
 
