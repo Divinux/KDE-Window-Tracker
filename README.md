@@ -5,7 +5,9 @@ CLI tool to log active window changes for productivity tracking similar to [Proc
 
 # Requirements
 python 3+
+
 KDE Plasma 6+
+
 systemd to create a background service
 
 # Install
