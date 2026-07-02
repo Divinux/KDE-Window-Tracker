@@ -9,7 +9,9 @@ python 3+
 
 KDE Plasma 6+
 
-systemd to create a background service
+systemd
+
+qdbus
 
 # Install
 ```bash
