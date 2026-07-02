@@ -28,6 +28,10 @@ class ActiveWindowLogger(dbus.service.Object):
             
         print(f"Logged: {log_entry}")
 
+    @dbus.service.method('kwin.windowtracker', in_signature='', out_signature='s')
+    def Ping(self):
+        return "ok"
+
 if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
     loop = GLib.MainLoop()
