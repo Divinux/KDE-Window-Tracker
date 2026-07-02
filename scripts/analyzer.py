@@ -1,6 +1,8 @@
 import json
 import datetime
 import os
+import argparse
+import shutil
 from collections import defaultdict
 
 LOG_FILE = os.path.expanduser("~/.window_activity.jsonl")
@@ -59,6 +61,7 @@ def format_time(seconds):
 
 def print_tree(stats):
     if not stats:
+        print("No activity data found.")
         return
 
     # 1. Sum up total time per app to sort the main branches
@@ -83,6 +86,65 @@ def print_tree(stats):
             print(f"{prefix} 📄 {title} [{format_time(duration)}]")
     print("="*30 + "\n")
 
+def print_condensed(stats):
+    if not stats:
+        print("No activity data found.")
+        return
+
+    # Calculate and sort totals
+    app_totals = {app: sum(titles.values()) for app, titles in stats.items()}
+    sorted_apps = sorted(app_totals.items(), key=lambda x: x[1], reverse=True)
+
+    # Get terminal width (defaults to 80 if it can't be detected)
+    term_width = shutil.get_terminal_size((80, 20)).columns
+
+    print("\n📊 Condensed App Usage")
+    print("=" * term_width)
+
+    # Filter apps and find the longest time string to keep the pipes aligned perfectly
+    valid_apps = [(app, t) for app, t in sorted_apps if t >= 5]
+    if not valid_apps:
+        return
+
+    max_time_len = max(len(format_time(t)) for _, t in valid_apps)
+
+    for app, total_app_time in valid_apps:
+        time_str = format_time(total_app_time)
+        app_str = f"📁 {app}"
+
+        # The right side of the line: a pipe and the right-aligned time
+        tail_str = f" | {time_str:>{max_time_len}}"
+
+        # Calculate how much space is needed to push the tail to the right edge
+        # (Subtracting 1 to account for terminal line-wrapping quirks)
+        padding_len = term_width - len(app_str) - len(tail_str) - 1
+
+        # Fallback just in case the terminal is narrower than the string
+        if padding_len < 1:
+            padding_len = 1
+
+        # Print the app, the dynamic empty space, and the aligned time string
+        print(f"{app_str}{' ' * padding_len}{tail_str}")
+
+    print("=" * term_width + "\n")
+
+
 if __name__ == "__main__":
+    # Set up command line argument parsing
+    parser = argparse.ArgumentParser(description="Analyze and display window activity logs.")
+    parser.add_argument(
+        "-c", "--condensed",
+        action="store_true",
+        help="Show a condensed view of only the applications, hiding individual tabs."
+    )
+
+    args = parser.parse_args()
+
+    # Parse the logs
     activity_stats = parse_logs()
-    print_tree(activity_stats)
+
+    # Decide which view to show based on the argument
+    if args.condensed:
+        print_condensed(activity_stats)
+    else:
+        print_tree(activity_stats)
