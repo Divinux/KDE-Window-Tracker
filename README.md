@@ -5,13 +5,18 @@ CLI tool to log active window changes for productivity tracking similar to [Proc
 <img src="images/screen1.png" width="800">
 
 # Requirements
-python 3+
 
 KDE Plasma 6+
 
 systemd
 
-qdbus
+qdbus (qdbus6)
+
+Depending on distribution
+
+python3-dbus
+
+python3-gi
 
 # Install
 ```bash
