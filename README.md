@@ -2,6 +2,8 @@
 
 CLI tool to log active window changes for productivity tracking similar to [ProcrastiTracker](https://strlen.com/procrastitracker/) and [ActivityWatch](https://activitywatch.net/). Works on KDE Plasma Wayland.
 
+Tested on Arch2026.07.01, Debian 13, Fedora 44
+
 <img src="images/screen1.png" width="800">
 
 # Requirements
