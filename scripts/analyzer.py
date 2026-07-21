@@ -21,7 +21,7 @@ def get_idle_timeout(app_class, title):
         return datetime.timedelta(minutes=30)
 
     # 10-Minute Timeout: Default for high-interaction apps (terminals, editors)
-    return datetime.timedelta(minutes=10)
+    return datetime.timedelta(minutes=10000)
 
 def parse_logs():
     stats = defaultdict(lambda: defaultdict(float))
@@ -35,18 +35,22 @@ def parse_logs():
             try:
                 event = json.loads(line.strip())
                 current_time = datetime.datetime.fromisoformat(event["timestamp"])
+                current_class = event["class"]
+                current_title = event["title"]
 
                 if prev_time is not None:
-                    delta = current_time - prev_time
-                    # Use the dynamic timeout based on the PREVIOUS window
-                    dynamic_timeout = get_idle_timeout(prev_class, prev_title)
+                    # Ignore deltas across system shutdown/startup boundaries
+                    if prev_class != "__SYSTEM__" and current_class != "__SYSTEM__":
+                        delta = current_time - prev_time
+                        # Use the dynamic timeout based on the PREVIOUS window
+                        dynamic_timeout = get_idle_timeout(prev_class, prev_title)
 
-                    if delta < dynamic_timeout:
-                        stats[prev_class][prev_title] += delta.total_seconds()
+                        if delta < dynamic_timeout:
+                            stats[prev_class][prev_title] += delta.total_seconds()
 
                 prev_time = current_time
-                prev_class = event["class"]
-                prev_title = event["title"]
+                prev_class = current_class
+                prev_title = current_title
             except (json.JSONDecodeError, KeyError):
                 continue
 
@@ -63,6 +67,10 @@ def print_tree(stats):
     if not stats:
         print("No activity data found.")
         return
+
+    # Filter out system events from rendering in the tree
+    if "__SYSTEM__" in stats:
+        del stats["__SYSTEM__"]
 
     # 1. Sum up total time per app to sort the main branches
     app_totals = {app: sum(titles.values()) for app, titles in stats.items()}
@@ -90,6 +98,10 @@ def print_condensed(stats):
     if not stats:
         print("No activity data found.")
         return
+
+    # Filter out system events from rendering in the condensed view
+    if "__SYSTEM__" in stats:
+        del stats["__SYSTEM__"]
 
     # Calculate and sort totals
     app_totals = {app: sum(titles.values()) for app, titles in stats.items()}
