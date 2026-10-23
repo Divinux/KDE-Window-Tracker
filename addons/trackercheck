@@ -1,0 +1,31 @@
+trackercheck() {
+    # 1. Check if KWin script is loaded
+    kwin_ok=$(qdbus org.kde.KWin /Scripting org.kde.kwin.Scripting.isScriptLoaded kwin.windowtracker 2>/dev/null)
+    if [[ "$kwin_ok" != "true" ]]; then
+        echo "WARN: Window Tracker KWin script not loaded"
+    fi
+
+    # 2. Check if KWin script is responding
+    kwin_state=$(qdbus kwin.windowtracker /Logger kwin.windowtracker.Ping 2>/dev/null)
+    if [[ "$kwin_state" != "ok" ]]; then
+        echo "WARN: Window Tracker logger script not responding"
+    fi
+
+    # 3. Check if DBus service is running
+    dbus_ok=$(busctl --user list 2>/dev/null | grep -q kwin.windowtracker && echo true || echo false)
+    if [[ "$dbus_ok" != "true" ]]; then
+        echo "WARN: kwin.windowtracker DBus service not running"
+    fi
+
+    # 4. Check if the Systemd service file exists
+    if [ ! -f ~/.config/systemd/user/windowtracker.service ]; then
+        echo "WARN: Window Tracker systemd service file missing"
+    fi
+
+    # 5. Check if the Systemd service is active (running)
+    if ! systemctl --user is-active --quiet windowtracker.service 2>/dev/null; then
+        echo "WARN: Window Tracker systemd service is not active"
+    fi
+}
+
+trackercheck
