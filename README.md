@@ -50,6 +50,11 @@ To display condensed stats
 windowtracker -c
 ```
 
+To display timespan (in days)
+```bash
+windowtracker -d 30
+```
+
 ## Addons
 The addons directory contains an optional script "trackercheck" which checks that:
 
