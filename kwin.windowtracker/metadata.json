@@ -11,7 +11,7 @@
         "Icon": "view-statistics",
         "Category": "Utilities",
         "EnabledByDefault": false,
-        "Version": "1.0",
+        "Version": "1.1",
         "License": "MIT",
         "Website": "https://github.com/Divinux/KDE-Window-Tracker",
         "ServiceTypes": [

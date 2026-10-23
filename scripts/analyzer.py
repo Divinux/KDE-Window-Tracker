@@ -1,3 +1,4 @@
+# WindowTracker analyzer v1.1
 import json
 import datetime
 import os
@@ -8,7 +9,7 @@ from collections import defaultdict
 LOG_FILE = os.path.expanduser("~/.window_activity.jsonl")
 
 def get_idle_timeout(app_class, title):
-    """Dynamically determine idle timeout based on context."""
+    #Dynamically determine idle timeout based on context.
     app_class = app_class.lower()
     title = title.lower()
 
@@ -20,7 +21,7 @@ def get_idle_timeout(app_class, title):
     if app_class in ["okular", "evince"] or "pdf" in title:
         return datetime.timedelta(minutes=30)
 
-    # 10-Minute Timeout: Default for high-interaction apps (terminals, editors)
+    # Default Timeout: For high-interaction apps (terminals, editors)
     return datetime.timedelta(minutes=10000)
 
 def parse_logs():
@@ -34,15 +35,13 @@ def parse_logs():
         for line in f:
             try:
                 event = json.loads(line.strip())
-                current_time = datetime.datetime.fromisoformat(event["timestamp"])
-                current_class = event["class"]
-                current_title = event["title"]
+                current_time = datetime.datetime.fromtimestamp(event[0])
+                current_class = event[1]
+                current_title = event[2]
 
                 if prev_time is not None:
-                    # Ignore deltas across system shutdown/startup boundaries
                     if prev_class != "__SYSTEM__" and current_class != "__SYSTEM__":
                         delta = current_time - prev_time
-                        # Use the dynamic timeout based on the PREVIOUS window
                         dynamic_timeout = get_idle_timeout(prev_class, prev_title)
 
                         if delta < dynamic_timeout:
@@ -51,7 +50,7 @@ def parse_logs():
                 prev_time = current_time
                 prev_class = current_class
                 prev_title = current_title
-            except (json.JSONDecodeError, KeyError):
+            except (json.JSONDecodeError, IndexError, TypeError):
                 continue
 
     return stats
@@ -79,7 +78,8 @@ def print_tree(stats):
     print("\n📊 Window Usage Tree\n" + "="*30)
 
     for app, total_app_time in sorted_apps:
-        if total_app_time < 5: continue # Skip apps open for less than 5 seconds globally
+        # Skip apps open for less than 5 seconds globally
+        if total_app_time < 5: continue
 
         print(f"📁 {app} [{format_time(total_app_time)}]")
 
@@ -87,9 +87,9 @@ def print_tree(stats):
         sorted_titles = sorted(stats[app].items(), key=lambda x: x[1], reverse=True)
 
         for i, (title, duration) in enumerate(sorted_titles):
-            if duration < 2: continue # Filter out accidental micro-switches
+            # Filter out accidental micro-switches
+            if duration < 1: continue
 
-            # Formatting to make it look like a nice terminal tree
             prefix = "   └─" if i == len(sorted_titles) - 1 else "   ├─"
             print(f"{prefix} 📄 {title} [{format_time(duration)}]")
     print("="*30 + "\n")
@@ -113,7 +113,7 @@ def print_condensed(stats):
     print("\n📊 Condensed App Usage")
     print("=" * term_width)
 
-    # Filter apps and find the longest time string to keep the pipes aligned perfectly
+    # Filter apps and find the longest time string to keep the pipes aligned
     valid_apps = [(app, t) for app, t in sorted_apps if t >= 5]
     if not valid_apps:
         return
